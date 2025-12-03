@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Kode Rahasia Anda{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <div class="alert alert-success text-center">
+            <h2 class="alert-heading">✅ Success</h2>
+            <p>Your image & message is now saved in Dashboard.</p>
+            <hr>
+            
+            <h3 class="fw-bold">Your secret code is : </h3>
+            <div class="bg-light p-3 border border-success rounded d-inline-block">
+                <code style="font-size: 1.5rem;">{{ secret_code }}</code>
+            </div>
+            
+            <p class="mt-3">
+                **IMPORTANT : ** REMEMBER THIS CODE, YOU MUST USE THIS CODE TO OPEN YOUR MESSAGES
+            </p>
+            
+            <a href="{{ url_for('dashboard') }}" class="btn btn-lg btn-success mt-4">
+                Continue to the Dashboard
+            </a>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Add Steganography{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">➕ Add Steganography</h2>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Back to dashboard</a>
+        </div>
+        
+        <p class="text-muted">
+            Hide your messages in a picture, and you will get your code to open it when needed.
+        </p>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-danger" role="alert">
+                    {% for category, message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white fw-bold">
+                Steganography Data
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('share_stegano') }}" method="POST" enctype="multipart/form-data">
+                    
+                    <div class="mb-4">
+                        <label for="carrier_image" class="form-label fw-bold">1. Image</label>
+                        <input class="form-control" type="file" id="carrier_image" name="carrier_image" accept="image/*" required>
+                        <div class="form-text">Choose your image **PNG Recommended**</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="secret_message" class="form-label fw-bold">2. Messages</label>
+                        <textarea class="form-control" id="secret_message" name="secret_message" rows="4" 
+                                  placeholder="Write your messages here, it will be hidden and cannot be opened without the code." 
+                                  required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        Accept
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

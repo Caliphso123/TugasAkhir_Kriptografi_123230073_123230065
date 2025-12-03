@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Rahasia{% endblock %}
+
+{% block content %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Welcome to SecureVault+, {{ user.username }}!</h2>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+    </div>
+    <p>SecureVault+ is completely safe with End-to-End Encryption.</p>
+    
+    <hr>
+    
+    <div class="mb-4">
+        <a href="{{ url_for('new_note_page') }}" class="btn btn-lg btn-success me-2">
+            + Add Note 
+        </a>
+        <a href="{{ url_for('add_file_page') }}" class="btn btn-lg btn-primary">
+            + Upload File
+        </a>
+        <a href="{{ url_for('share_stegano_page') }}" class="btn btn-lg btn-warning">
+            + Add Steganography 
+        </a>
+    </div>
+    
+    <hr class="my-4">
+    
+     📝 Notes
+    <table class="table table-bordered table-striped mb-5">
+        <thead>
+            <tr>
+                <th style="width: 5%;">ID</th>
+                <th style="width: 25%;">Created at</th>
+                <th>Notes</th>
+                <th style="width: 15%;" class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for note in text_notes %}
+            <tr>
+                <td>{{ note.id }}</td>
+                <td>{{ note.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>
+                    {% if "ERROR DEKRIPSI" in note.content %}
+                        <span class="text-danger fw-bold">{{ note.content }}</span>
+                    {% else %}
+                        {{ note.content }}
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <form method="POST" action="{{ url_for('ui_delete_note') }}">
+                        <input type="hidden" name="note_id" value="{{ note.id }}">
+                        <button type="submit" class="btn btn-sm btn-danger w-100" 
+                                onclick="return confirm('Apakah Anda yakin ingin menghapus catatan ini?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">You dont have notes yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+     📁 Files
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th style="width: 5%;">ID</th>
+                <th style="width: 25%;">Uploaded at</th>
+                <th>File name</th>
+                <th style="width: 15%;" class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for note in file_notes %}
+            <tr>
+                <td>{{ note.id }}</td>
+                <td>{{ note.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>
+                    {% if "ERROR DEKRIPSI" in note.content %}
+                        <span class="text-danger fw-bold">{{ note.content }}</span>
+                    {% else %}
+                        <span class="text-info fw-bold">[{{ note.original_filename }}]</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-between">
+                         <a href="{{ url_for('ui_download_note', note_id=note.id) }}" class="btn btn-sm btn-info me-1">
+                            Download
+                        </a>
+                        <form method="POST" action="{{ url_for('ui_delete_note') }}" class="m-0">
+                            <input type="hidden" name="note_id" value="{{ note.id }}">
+                            <button type="submit" class="btn btn-sm btn-danger" 
+                                    onclick="return confirm('Apakah Anda yakin ingin menghapus file ini?');">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">You dont have file yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="my-4">
+
+🖼️ Steganography
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th style="width: 5%;">ID</th>
+            <th style="width: 20%;">Created at</th>
+            <th>Picture</th>
+            <th style="width: 25%;" class="text-center">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for note in stegano_notes %}
+        <tr>
+            <td>{{ note.id }}</td>
+            <td>{{ note.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>
+                <img src="data:image/jpeg;base64,{{ note.base64_stego_image | safe }}" 
+                    alt="Gambar Steganografi" 
+                    title="{{ note.original_filename }}" 
+                    class="rounded-lg shadow-sm"
+                    style="max-width: 100px; max-height: 100px; object-fit: cover;">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-success me-1 btn-view-stegano" 
+                        data-note-id="{{ note.id }}"
+                        data-image-url="data:image/png;base64,{{ note.base64_stego_image | safe }}">
+                    Look for message
+                </button>
+                <form method="POST" action="{{ url_for('ui_delete_note') }}" class="d-inline m-0">
+                    <input type="hidden" name="note_id" value="{{ note.id }}">
+                    <button type="submit" class="btn btn-sm btn-danger" 
+                            onclick="return confirm('Hapus file stegano ini?');">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4">You dont have steganography yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="modal fade" id="steganoModal" tabindex="-1" aria-labelledby="steganoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="steganoModalLabel">Input your secret code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Messages can be only opened with the right code.</p>
+                <form id="steganoForm">
+                    <input type="hidden" id="modalNoteId">
+                    <div class="mb-3">
+                        <label for="secretCode" class="form-label">Secret Code</label>
+                        <input type="text" class="form-control" id="secretCode" required maxlength="10">
+                    </div>
+                    <div id="steganoResult" class="alert d-none"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="steganoForm" class="btn btn-primary" id="submitCodeBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+ <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const steganoModalElement = document.getElementById('steganoModal');
+
+        if (!steganoModalElement) {
+            console.error("Elemen modal #steganoModal tidak ditemukan.");
+            return;
+        }
+        
+
+        const steganoModal = new bootstrap.Modal(steganoModalElement);
+        const modalNoteId = document.getElementById('modalNoteId');
+        const steganoResult = document.getElementById('steganoResult');
+        const secretCodeInput = document.getElementById('secretCode');
+        const steganoForm = document.getElementById('steganoForm');
+        const steganoImagePreview = document.getElementById('steganoImagePreview'); 
+
+        document.querySelectorAll('.btn-view-stegano').forEach(button => {
+            button.addEventListener('click', function() {
+                console.log("Tombol diklik. Memulai proses modal...");
+                const noteId = this.getAttribute('data-note-id');
+                const imageUrl = this.getAttribute('data-image-url');
+                modalNoteId.value = noteId;
+                steganoResult.classList.add('d-none'); 
+                secretCodeInput.value = ''; 
+                steganoResult.textContent = ''; 
+                steganoModal.show();
+            });
+        });
+
+        steganoModalElement.addEventListener('shown.bs.modal', function () {
+                console.log("Modal Selesai Ditampilkan. Mencari dan mengatur gambar.");
+                updateSteganoImage(steganoModalElement, currentImageUrl, currentNoteId); 
+            });
+
+        steganoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const noteId = modalNoteId.value;
+            const inputCode = secretCodeInput.value;
+
+            if (inputCode.length !== 10) {
+                steganoResult.textContent = 'The code must be 10 characters.';
+                steganoResult.className = 'alert alert-danger';
+                steganoResult.classList.remove('d-none');
+                return;
+            }
+
+            steganoResult.textContent = 'Decrypting...';
+            steganoResult.className = 'alert alert-info';
+            steganoResult.classList.remove('d-none');
+
+            try {
+                const payload = { input_secret_code: inputCode };
+
+                const response = await fetch(`/view_secret_stegano_public/${noteId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', 
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+
+                const contentType = response.headers.get('content-type');
+                let data;
+
+                if (contentType && contentType.indexOf('application/json') !== -1) {
+                    data = await response.json();
+                    console.log('Respons JSON dari Server:', data); 
+                } else {
+                    const htmlResponse = await response.text();
+                    console.error('SERVER TIDAK MENGEMBALIKAN JSON. Respons HTML/Teks:', htmlResponse);
+                    steganoResult.innerHTML = `
+                        <strong>Kesalahan Server: Status ${response.status}</strong>.
+                        <br>Server mengembalikan halaman web (HTML) BUKAN data JSON.
+                        <br>Penyebab: **Sesi login hilang** atau **ID Catatan tidak ditemukan**.
+                        <br>Harap cek log Flask Anda!
+                    `;
+                    steganoResult.className = 'alert alert-danger';
+                    steganoResult.classList.remove('d-none');
+                    return;
+                }
+
+                if (response.ok) {
+                    if (data && data.secret_content) {
+                        steganoResult.innerHTML = `<strong>Messages Founded!</strong><br>${data.secret_content}`;
+                        steganoResult.className = 'alert alert-success';
+                    } else {
+                        steganoResult.textContent = 'You put the wrong code.';
+                        steganoResult.className = 'alert alert-warning';
+                    }
+
+                } else {
+                    steganoResult.textContent = `Gagal Dekripsi: ${data.message || 'Error tidak diketahui.'}`;
+                    steganoResult.className = 'alert alert-danger';
+                }
+            } catch (error) {
+                steganoResult.textContent = `Error Koneksi atau Parsing (Fatal): ${error.message}`;
+                steganoResult.className = 'alert alert-danger';
+            } finally {
+                steganoResult.classList.remove('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %}
